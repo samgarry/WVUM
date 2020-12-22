@@ -21,44 +21,38 @@ class ViewController: UIViewController {
     @IBOutlet weak var btnPlay: UIButton!
     @IBOutlet var artistLabel: UILabel!
     @IBOutlet var songLabel: UILabel!
+    @IBOutlet var djLabel: UILabel!
+    @IBOutlet var presentsLabel: UILabel!
+    @IBOutlet var fromLabel: UILabel!
+    @IBOutlet var background: UIImageView!
     
     let streamer = RadioPlayer()
+    let reader = DataReader()
     var timer = Timer()
     let infoCC = MPNowPlayingInfoCenter.default()
-    var artist: String = ""
-    var song: String = ""
+    let playConfig = UIImage.SymbolConfiguration(pointSize: 75, weight: .bold, scale: .large)
+    let pauseConfig = UIImage.SymbolConfiguration(pointSize: 80, weight: .bold, scale: .large)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         streamer.initAVSession()
         scheduledTimerWithTimeInterval()
-        metadataUpdater()
+        reader.metadataUpdater()
+        reader.djUpdater()
         updateGeneralMetadata()
         setupRemoteTransportControls()
-        btnPlay.setImage(UIImage(named: "playButton.png"), for: UIControl.State.normal)
         
-        struct Response: Codable { // or Decodable
-          let currentDJ: String
-        }
-        
-        // REFRESH DJ EVERY FIVE MINUTES
-        
-        if let url = URL(string: "https://us-central1-wvum-d6fb8.cloudfunctions.net/getDJ") {
-           URLSession.shared.dataTask(with: url) { data, response, error in
-              if let data = data {
-                  do {
-                     let res = try JSONDecoder().decode(Response.self, from: data)
-                     print(res.currentDJ)
-                  } catch let error {
-                     print(error)
-                  }
-               }
-           }.resume()
-        }
-    }
-    
-    
-    
+        //Set up images
+        background.image = UIImage(named: "background.png")
+        background.contentMode = .scaleAspectFill
+        background.backgroundColor = .black
+        background.alpha = 0.8
+        btnPlay.setImage(UIImage(systemName: "play.fill", withConfiguration: playConfig), for: UIControl.State.normal)
+        btnPlay.tintColor = .white
+        btnPlay.layer.shadowColor = UIColor.gray.cgColor
+        btnPlay.layer.shadowOffset = CGSize(width: 5, height: 5)
+        btnPlay.layer.shadowRadius = 4
+        btnPlay.layer.shadowOpacity = 1.0      }
 
     func setupRemoteTransportControls() {
         // Get the shared MPRemoteCommandCenter
@@ -85,8 +79,16 @@ class ViewController: UIViewController {
     
     @objc func timerFired() {
         updateGeneralMetadata()
-        metadataUpdater()
-        statusUpdater()
+        reader.metadataUpdater()
+        reader.djUpdater()
+        buttonUpdater()
+        
+        //Set meta data labels to the variables from the Data Reader
+        artistLabel.text = reader.artist
+        songLabel.text = reader.song
+        djLabel.text = reader.dj
+        fromLabel.text = reader.by
+        presentsLabel.text = reader.presents
     }
     
     func scheduledTimerWithTimeInterval() {
@@ -100,58 +102,31 @@ class ViewController: UIViewController {
         }*/
         //let item = currentItem
         var nowPlayingInfo = infoCC.nowPlayingInfo ?? [String: Any]()
-        nowPlayingInfo[MPMediaItemPropertyTitle] = song
-        nowPlayingInfo[MPMediaItemPropertyArtist] = artist
+        nowPlayingInfo[MPMediaItemPropertyTitle] = reader.song
+        nowPlayingInfo[MPMediaItemPropertyArtist] = reader.artist
         //nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = item?.albumTitle
         //nowPlayingInfo[MPMediaItemPropertyArtwork] = item?.artwork
         infoCC.nowPlayingInfo = nowPlayingInfo
     }
     
-    func statusUpdater() {
+    func buttonUpdater() {
         if ((streamer.player?.rate == 1.0) && (streamer.player?.error == nil)) {
-            self.btnPlay.setImage(UIImage(named: "pauseButton.png"), for: UIControl.State.normal)
-        }
+            btnPlay.setImage(UIImage(systemName: "pause.fill", withConfiguration: pauseConfig), for: UIControl.State.normal)        }
         else {
-            self.btnPlay.setImage(UIImage(named: "playButton.png"), for: UIControl.State.normal)
+            btnPlay.setImage(UIImage(systemName: "play.fill", withConfiguration: playConfig), for: UIControl.State.normal)
             streamer.pause()
         }
-    }
-           
-    func metadataUpdater() {
-        if let trackURL = URL(string: "http://cdn.voscast.com/stats/display.js?key=35d25babae2f8cb7af0a4f9f0d7f9821&stats=songtitle&bid=5ed2929d959c0&action=update") {
-           do {
-            let delimiter = "\""
-            let contents = try String(contentsOf: trackURL)
-            let data = contents.components(separatedBy: delimiter)
-            let songInfoSegment = "\(data[3])"
-            
-            let delimiter2 = "-"
-            let songInfo = songInfoSegment.components(separatedBy: delimiter2)
-            artist = "\(songInfo[0])"
-            song = "\(songInfo[1])"
-                
-                
-                
-            artistLabel.text = artist
-            songLabel.text = song
-            
-           } catch {
-               print("Contents could not be loaded")
-           }
-       } else {
-           print("URL was bad!")
-       }
+        btnPlay.tintColor = .white
     }
     
     @IBAction func btnPress(sender: AnyObject) {
         if streamer.player != nil {
             streamer.pause()
-            btnPlay.setImage(UIImage(named: "playButton.png"), for: UIControl.State.normal)
+            btnPlay.setImage(UIImage(systemName: "play.fill", withConfiguration: playConfig), for: UIControl.State.normal)
         }
         else {
             streamer.play()
-            btnPlay.setImage(UIImage(named: "pauseButton.png"), for: UIControl.State.normal)
-            
+            btnPlay.setImage(UIImage(systemName: "pause.fill", withConfiguration: pauseConfig), for: UIControl.State.normal)
         }
     }
 }

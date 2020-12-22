@@ -14,6 +14,7 @@ import MediaPlayer
 class RadioPlayer: NSObject {
     //VARIABLES
     var player:AVPlayer?
+//    let playerItem = AVPlayerItem(url: NSURL(string: "http://s7.voscast.com:8692/stream")! as URL)
     let playerItem = AVPlayerItem(url: NSURL(string: "http://s7.voscast.com:8692/stream")! as URL)
     let session = AVAudioSession.sharedInstance()
     
