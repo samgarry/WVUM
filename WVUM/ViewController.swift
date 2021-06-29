@@ -1,6 +1,6 @@
 //
 //  ViewController.swift
-//  Radio Demo (Swift)
+//  WVUM
 //
 //  Created by Samuel Garry on 5/23/20.
 //  Copyright © 2020 Sam Garry. All rights reserved.
@@ -22,16 +22,25 @@ class ViewController: UIViewController {
     @IBOutlet var artistLabel: UILabel!
     @IBOutlet var songLabel: UILabel!
     @IBOutlet var djLabel: UILabel!
-    @IBOutlet var presentsLabel: UILabel!
-    @IBOutlet var fromLabel: UILabel!
+    @IBOutlet var withLabel: UILabel!
+    @IBOutlet var byLabel: UILabel!
     @IBOutlet var background: UIImageView!
+    @IBOutlet var leftLogo: UIImageView!
     
     let streamer = RadioPlayer()
     let reader = DataReader()
     var timer = Timer()
+    var djTimer = Timer()
     let infoCC = MPNowPlayingInfoCenter.default()
+    
+    //play and pause symbol configurations
     let playConfig = UIImage.SymbolConfiguration(pointSize: 75, weight: .bold, scale: .large)
     let pauseConfig = UIImage.SymbolConfiguration(pointSize: 80, weight: .bold, scale: .large)
+    
+    //Album artwork initialization
+    let albumImage = UIImage(named: "albumArtwork")!
+    
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,17 +51,44 @@ class ViewController: UIViewController {
         updateGeneralMetadata()
         setupRemoteTransportControls()
         
-        //Set up images
+        //Set up initial meta data label assignments
+        initMetaDataLabels()
+
+        //Set up background image
         background.image = UIImage(named: "background.png")
         background.contentMode = .scaleAspectFill
         background.backgroundColor = .black
-        background.alpha = 0.8
+        background.alpha = 0.75
+        
+        //Set up play/pause button image
         btnPlay.setImage(UIImage(systemName: "play.fill", withConfiguration: playConfig), for: UIControl.State.normal)
         btnPlay.tintColor = .white
-        btnPlay.layer.shadowColor = UIColor.gray.cgColor
-        btnPlay.layer.shadowOffset = CGSize(width: 5, height: 5)
-        btnPlay.layer.shadowRadius = 4
-        btnPlay.layer.shadowOpacity = 1.0      }
+        
+        //Shadow (not using this for this version)
+//        btnPlay.layer.shadowColor = UIColor.gray.cgColor
+//        btnPlay.layer.shadowOffset = CGSize(width: 5, height: 5)
+//        btnPlay.layer.shadowRadius = 4
+//        btnPlay.layer.shadowOpacity = 1.0
+        
+        //Set up logo images
+        leftLogo.image = UIImage(named: "logoWVUM.png") //Left Image
+        leftLogo.alpha = 0.9
+    }
+    
+    //Set up meta data label assignments
+    func initMetaDataLabels() {
+        songLabel.text = reader.song
+        byLabel.text = reader.by
+        artistLabel.text = reader.artist
+        withLabel.text = reader.with
+        djLabel.text = reader.dj
+        print("djLabel: " + reader.dj)
+    }
+    
+    //Make the elements of the status bar dark
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .darkContent
+    }
 
     func setupRemoteTransportControls() {
         // Get the shared MPRemoteCommandCenter
@@ -80,32 +116,31 @@ class ViewController: UIViewController {
     @objc func timerFired() {
         updateGeneralMetadata()
         reader.metadataUpdater()
-        reader.djUpdater()
-        buttonUpdater()
+        buttonUpdater() //update control panel and notification center every second
         
-        //Set meta data labels to the variables from the Data Reader
-        artistLabel.text = reader.artist
-        songLabel.text = reader.song
-        djLabel.text = reader.dj
-        fromLabel.text = reader.by
-        presentsLabel.text = reader.presents
+        initMetaDataLabels()
+    }
+    
+    @objc func djTimerFired() {
+        reader.djUpdater() //This gets called every five minutes
     }
     
     func scheduledTimerWithTimeInterval() {
-        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.timerFired), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 15, target: self, selector: #selector(self.timerFired), userInfo: nil, repeats: true)
+        djTimer = Timer.scheduledTimer(timeInterval: 300, target: self, selector: #selector(self.djTimerFired), userInfo: nil, repeats: true)
     }
-    
+        
     func updateGeneralMetadata() {
         /*guard player.url != nil, let _ = player.url else {
             infoCC.nowPlayingInfo = nil
             return
         }*/
-        //let item = currentItem
         var nowPlayingInfo = infoCC.nowPlayingInfo ?? [String: Any]()
         nowPlayingInfo[MPMediaItemPropertyTitle] = reader.song
         nowPlayingInfo[MPMediaItemPropertyArtist] = reader.artist
-        //nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = item?.albumTitle
-        //nowPlayingInfo[MPMediaItemPropertyArtwork] = item?.artwork
+        let albumArt = MPMediaItemArtwork.init(boundsSize: albumImage.size,
+                requestHandler: { (size) -> UIImage in return self.albumImage })
+        nowPlayingInfo[MPMediaItemPropertyArtwork] = albumArt
         infoCC.nowPlayingInfo = nowPlayingInfo
     }
     

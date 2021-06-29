@@ -98,13 +98,12 @@
 		87606BC52479EF6700BE81F9 /* WVUM */ = {
 			isa = PBXGroup;
 			children = (
-				87A9C030259195CF00BBAA0A /* Poppins */,
 				87606BC62479EF6700BE81F9 /* AppDelegate.swift */,
 				87606BC82479EF6700BE81F9 /* SceneDelegate.swift */,
+				87A9C0622592D84600BBAA0A /* Models */,
 				87606BCA2479EF6700BE81F9 /* ViewController.swift */,
-				8799B55025902C450016BA1A /* DataReader.swift */,
-				87BB25792486142600C78CDF /* RadioPlayer.swift */,
 				87606BCC2479EF6700BE81F9 /* Main.storyboard */,
+				87A9C030259195CF00BBAA0A /* Poppins */,
 				87606BCF2479EF6700BE81F9 /* Assets.xcassets */,
 				87606BD12479EF6700BE81F9 /* LaunchScreen.storyboard */,
 				87606BD42479EF6700BE81F9 /* Info.plist */,
@@ -135,8 +134,18 @@
 				87A9C042259195CF00BBAA0A /* Poppins-Italic.ttf */,
 				87A9C043259195CF00BBAA0A /* Poppins-MediumItalic.ttf */,
 			);
-			path = Poppins;
+			name = Poppins;
+			path = WVUM/Poppins;
 			sourceTree = SOURCE_ROOT;
+		};
+		87A9C0622592D84600BBAA0A /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				8799B55025902C450016BA1A /* DataReader.swift */,
+				87BB25792486142600C78CDF /* RadioPlayer.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
