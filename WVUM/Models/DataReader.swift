@@ -44,32 +44,25 @@ class DataReader : NSObject {
        }
     }
     
-        func djUpdater() {
-    
-            struct Response: Codable { // or Decodable
-              let currentDJ: String
+    func djUpdater() {
+        if let djURL = URL(string: "https://us-central1-wvum-d6fb8.cloudfunctions.net/getDJ") {
+           do {
+            let delimiter = "\""
+            let contents = try String(contentsOf: djURL)
+            let data = contents.components(separatedBy: delimiter)
+            dj = "\(data[3])"
+            if dj == "Rotation" {
+                dj = "WVUM"
             }
-    
-            if let url = URL(string: "https://us-central1-wvum-d6fb8.cloudfunctions.net/getDJ") {
-               URLSession.shared.dataTask(with: url) { data, response, error in
-                  if let data = data {
-                      do {
-                        let res = try JSONDecoder().decode(Response.self, from: data)
-                        if res.currentDJ == "Rotation" {
-                            self.dj = "WVUM"
-                        }
-                        else {
-                            self.dj = res.currentDJ
-                        }
-                      } catch {
-                         print(error)
-                        self.dj = "WVUM"
-                      }
-                   }
-                print ("self.dj: " + self.dj)
-               }.resume()
-            }
-        }
-    
-    
+            with = "with"
+           } catch {
+                with = ""
+                dj = "Could not load dj info"
+           }
+       } else {
+            with = ""
+            dj = "Dj metadata link is down"
+            print("dj URL was bad!")
+       }
+    }
 }
