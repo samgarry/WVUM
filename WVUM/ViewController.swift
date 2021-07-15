@@ -18,6 +18,7 @@ import MediaPlayer
 
 class ViewController: UIViewController {
 
+    //Outlets
     @IBOutlet weak var btnPlay: UIButton!
     @IBOutlet var artistLabel: UILabel!
     @IBOutlet var songLabel: UILabel!
@@ -27,6 +28,7 @@ class ViewController: UIViewController {
     @IBOutlet var background: UIImageView!
     @IBOutlet var leftLogo: UIImageView!
     
+    //Variables
     let streamer = RadioPlayer()
     let reader = DataReader()
     var timer = Timer()
@@ -40,6 +42,47 @@ class ViewController: UIViewController {
     //Album artwork initialization
     let albumImage = UIImage(named: "albumArtwork")!
     
+    //Navigation Controller
+//    var menu: SideMenuNavigationController?
+    lazy var navigationTitleStackView: UIStackView = {
+        let wvumLabel = UILabel()
+        wvumLabel.textAlignment = .right
+        wvumLabel.text = "wvum"
+        wvumLabel.font = UIFont(name: "Poppins-Medium", size: 28)
+        let stationLabel = UILabel()
+        stationLabel.textAlignment = .left
+        stationLabel.text = "90.5"
+        stationLabel.font = UIFont(name: "Poppins-Regular", size: 32)
+        let stackView = UIStackView(arrangedSubviews: [wvumLabel, stationLabel])
+        stackView.axis = .horizontal
+        return stackView
+    }()
+    
+    lazy var wvumLogo: UIBarButtonItem = {
+        let button = UIButton()
+        button.setImage(UIImage(named: "logoWVUM.png"), for: .normal)
+        button.alpha = 0.9
+        button.adjustsImageWhenHighlighted = false
+        let barButton = UIBarButtonItem(customView: button)
+        barButton.customView?.translatesAutoresizingMaskIntoConstraints = false
+        barButton.customView?.heightAnchor.constraint(equalToConstant: 60).isActive = true
+        barButton.customView?.widthAnchor.constraint(equalToConstant: 60).isActive = true
+        return barButton
+    }()
+    
+    lazy var menuLogo: UIBarButtonItem = {
+        let button = UIButton(type: .system)
+        let menu = UIImage(systemName: "line.horizontal.3")
+        button.setImage(menu, for: .normal)
+        button.tintColor = .black
+        let configuration = UIImage.SymbolConfiguration(pointSize: 40, weight: .thin, scale: .default)
+        button.setPreferredSymbolConfiguration(configuration, forImageIn: .normal)
+        let barButton = UIBarButtonItem(customView: button)
+        barButton.customView?.translatesAutoresizingMaskIntoConstraints = false
+        barButton.customView?.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        barButton.customView?.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        return barButton
+    }()
 
     
     override func viewDidLoad() {
@@ -64,15 +107,28 @@ class ViewController: UIViewController {
         btnPlay.setImage(UIImage(systemName: "play.fill", withConfiguration: playConfig), for: UIControl.State.normal)
         btnPlay.tintColor = .white
         
-        //Shadow (not using this for this version)
-//        btnPlay.layer.shadowColor = UIColor.gray.cgColor
-//        btnPlay.layer.shadowOffset = CGSize(width: 5, height: 5)
-//        btnPlay.layer.shadowRadius = 4
-//        btnPlay.layer.shadowOpacity = 1.0
-        
         //Set up logo images
         leftLogo.image = UIImage(named: "logoWVUM.png") //Left Image
         leftLogo.alpha = 0.9
+        
+        //Set up side menu navigation controller
+        navigationItem.titleView = navigationTitleStackView
+        navigationItem.leftBarButtonItem = wvumLogo
+        navigationItem.rightBarButtonItem = menuLogo
+//        menu = SideMenuNavigationController(rootViewController: UIViewController())
+        
+        
+//        if let navigationBar = self.navigationController?.navigationBar {
+//            let rightFrame = CGRect(x: navigationBar.frame.width/2, y: 0, width: 1, height: navigationBar.frame.height)
+//            let number = UILabel(frame: rightFrame)
+//            number.text = "90.5"
+//            number.font = UIFont(name: "Poppins-Regular", size: 32)
+//            navigationBar.addSubview(number)
+//        }
+    }
+    
+    @IBAction func didTapMenu() {
+//        present(menu!, animated: true)
     }
     
     //Set up meta data label assignments
@@ -82,7 +138,6 @@ class ViewController: UIViewController {
         artistLabel.text = reader.artist
         withLabel.text = reader.with
         djLabel.text = reader.dj
-        print("djLabel: " + reader.dj)
     }
     
     //Make the elements of the status bar dark
